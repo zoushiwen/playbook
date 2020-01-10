@@ -1,0 +1,25 @@
+- name: copy ingress yaml
+  template: 
+    src: "{{ item}}" 
+    dest: "{{ axion_base_dir }}/manifests/nginx-ingress/"
+  with_list:
+    - 'deployment.yaml'
+    - 'namespace.yaml'
+    - 'rbac.yaml'
+    - 'service.yaml'
+- name: copy ingress configmap yaml
+  template: 
+    src: "{{ item}}.j2" 
+    dest: "{{ axion_base_dir }}/manifests/nginx-ingress/{{item}}"
+  with_list:
+    - 'configmap.yaml'
+- name: install nginx ingress
+  shell: |
+    {{kubectl_bin_path}}/kubectl apply -f "{{axion_base_dir }}/manifests/nginx-ingress/{{ item }}"
+  with_list:
+    - 'namespace.yaml'
+    - 'rbac.yaml'
+    - 'configmap.yaml'
+    - 'deployment.yaml'
+    - 'service.yaml'
+  ignore_errors: True

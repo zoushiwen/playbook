@@ -1,0 +1,22 @@
+- name: 生成 haproxy 配置文件
+  template:
+    src: haproxy.cfg.j2
+    dest: '/etc/haproxy/haproxy.cfg'
+- name: 启动 haproxy
+  shell: systemctl enable haproxy && systemctl restart haproxy
+  ignore_errors: True
+
+- name: 获取加入集群config参数
+  shell: kubeadm token create --print-join-command
+  register: k8s_cluster_api_token
+
+- name: master加入集群
+  shell: "{{ k8s_cluster_api_token.stdout }}  --control-plane"
+
+
+
+
+
+
+
+

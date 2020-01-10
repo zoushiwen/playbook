@@ -1,0 +1,12 @@
+- hosts: k8s-masters
+  gather_facts: no
+  become: true
+  tasks:
+    - name: install ceph-common
+      yum: name="ceph-common-0.94.5.15-1.el7.x86_64" state=installed
+
+- hosts: "{{ groups['k8s-masters'][0] }}"
+  gather_facts: no
+  become: true
+  roles:
+    - { role: ceph-rbd, do: main}

@@ -1,0 +1,43 @@
+#- hosts: "{{ groups['k8s-master'][0] }}"
+#  gather_facts: yes
+#  become: true
+#  roles:
+#    - { role: oscar, do: common/check }
+
+- hosts: k8s-masters,k8s-nodes
+  gather_facts: yes
+  become: true
+  roles:
+    - { role: oscar, do: common }
+
+- hosts: "{{ groups['k8s-masters'][0] }}"
+  gather_facts: no
+  become: true
+  vars:
+    MASTER1: "{{ groups['k8s-masters'][0]}}"
+    MASTER2: "{{ groups['k8s-masters'][1]}}"
+    MASTER3: "{{ groups['k8s-masters'][2]}}"
+  roles:
+    - { role: oscar, do: install_master }
+
+- hosts: "{{ groups['k8s-masters'][1] }} {{ groups['k8s-masters'][2] }}"
+  gather_facts: no
+  become: true
+  vars:
+    MASTER1: "{{ groups['k8s-masters'][0]}}"
+    MASTER2: "{{ groups['k8s-masters'][1]}}"
+    MASTER3: "{{ groups['k8s-masters'][2]}}"
+  roles:
+    - { role: oscar, do: add_master }
+
+- hosts: k8s-nodes
+  gather_facts: no
+  become: true
+  roles:
+    - { role: oscar, do: add_node }
+
+- hosts: "{{ groups['k8s-masters'][0] }}"
+  gather_facts: yes
+  become: true
+  roles:
+    - { role: oscar, do: last }

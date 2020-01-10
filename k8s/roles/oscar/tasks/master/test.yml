@@ -1,0 +1,2 @@
+- name: 拷贝 admin.conf 文件
+  copy: src="/etc/kubernetes/admin.conf" dest="$HOME/.kube/config"

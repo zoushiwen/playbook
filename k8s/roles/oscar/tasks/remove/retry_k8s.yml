@@ -1,0 +1,21 @@
+- name: reset kubeadm
+  shell: "{{ item }}"
+  with_items:
+    - "kubeadm reset -f"
+    - "ip link delete cni0"
+    - "ip link delete flannel.1"
+  register: result
+  ignore_errors: True
+
+- name: 删除k8s安装目录
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/var/lib/etcd"
+    - "/root/.kube"
+    - "/etc/kubernetes/pki/"
+    - "/etc/kubernetes/manifests"
+  when: result|success
+  ignore_errors: True
+

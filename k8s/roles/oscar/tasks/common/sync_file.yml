@@ -1,0 +1,20 @@
+- name: 上传 {{ item.src }} -> {{ item.dest }}
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+  - { src: '/etc/kubernetes/pki/ca.crt',dest: '/etc/kubernetes/pki/ca.crt'}
+  - { src: '/etc/kubernetes/pki/ca.key',dest: '/etc/kubernetes/pki/ca.key'}
+  - { src: '/etc/kubernetes/pki/sa.key',dest: '/etc/kubernetes/pki/sa.key'}
+  - { src: '/etc/kubernetes/pki/sa.pub',dest: '/etc/kubernetes/pki/sa.pub'}
+  - { src: '/etc/kubernetes/pki/front-proxy-ca.crt',dest: '/etc/kubernetes/pki/front-proxy-ca.crt'}
+  - { src: '/etc/kubernetes/pki/front-proxy-ca.key',dest: '/etc/kubernetes/pki/front-proxy-ca.key'}
+  - { src: '/etc/kubernetes/pki/etcd/ca.crt',dest: '/etc/kubernetes/pki/etcd/ca.crt'}
+  - { src: '/etc/kubernetes/pki/etcd/ca.key',dest: '/etc/kubernetes/pki/etcd/ca.key'}
+  - { src: '/etc/kubernetes/admin.conf',dest: '/etc/kubernetes/admin.conf'}
+  - { src: '/etc/haproxy/haproxy.cfg',dest: '/etc/haproxy/haproxy.cfg'}
+  - { src: '/etc/kubernetes/admin.conf',dest: '/root/.kube/config'}
+
+
+
+

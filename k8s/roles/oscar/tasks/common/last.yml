@@ -1,0 +1,10 @@
+- name: 启动CNI插件 flannel
+  shell: kubectl  apply --kubeconfig  /etc/kubernetes/admin.conf -f /etc/kubernetes/kube-flannel.yml
+
+- name: 主节点开启调度 pod
+  shell: kubectl taint nodes --all node-role.kubernetes.io/master-
+  ignore_errors: True
+
+- debug:
+    msg:
+      - "Run 'kubectl get nodes' on the control-plane to see this node join the cluster."

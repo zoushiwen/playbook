@@ -1,0 +1,137 @@
+- name: 关闭 swap
+  shell: swapoff -a && sed  -i '/\s\+swap\s\+/d' /etc/fstab
+
+- name: mask 防火墙
+  shell: systemctl mask "{{ item }}"
+  with_items:
+    - "iptables"
+    - "ip6tables"
+    - "firewalld"
+
+- name: 关闭防火墙
+  shell: systemctl "{{ item }}" firewalld
+  with_items:
+    - "disable"
+    - "stop"
+
+- name: 开启内核转发
+  shell: "sysctl net.bridge.bridge-nf-call-iptables=1"
+  ignore_errors: True
+
+
+- name: 创建k8s安装目录kube
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "/etc/kubernetes"
+    - "/etc/kubernetes/pki"
+    - "/etc/kubernetes/pki/etcd/"
+    - "/etc/haproxy"
+    - "/etc/docker"
+    - "/root/.kube"
+
+- name: 添加阿里云 docker-ce 镜像
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - {src: 'aliyun.repo', dest: '/etc/yum.repos.d/aliyun.repo'}
+    - {src: 'docker-ce.repo' , dest: '/etc/yum.repos.d/aliyun-docker-ce.repo' }
+    - {src: 'kubernetes.repo' , dest: '/etc/yum.repos.d/aliyun-kubernetes.repo'}
+    - {src: 'daemon.json', dest: '/etc/docker/daemon.json' }
+    - {src: 'kube-flannel.yml', dest: '/etc/kubernetes/kube-flannel.yml'}
+
+- name: 删除老版本 Docker
+  yum:
+    name: "{{ item }}"
+    state: removed
+  with_items:
+    - "docker"
+    - "docker-common"
+    - "docker-selinux"
+    - "docker-engine"
+
+
+- name: 安装新版docker依赖
+  yum:
+    name : "{{ item }}"
+    state: installed
+    enablerepo: "aliyun-extras,aliyun-base,docker-ce-stable"
+  with_list:
+    - "socat"
+    - "ipvsadm"
+    - "ipset"
+    - "nfs-utils"
+    - "yum-utils"
+    - "device-mapper-persistent-data"
+    - "lvm2"
+    - "rsync"
+
+- name: 拷贝内核模块脚本
+  copy: src=add_modules.sh dest='/etc/sysconfig/modules/ipvs.modules' mode=755
+
+- name: 导入内核模块 ip_vs_rr ip_vs_sh ip_vs_wrr
+  script: add_modules.sh
+
+- name: 安装最新版docker
+  yum:
+    name: "{{ item }}"
+    state: latest
+    enablerepo: "aliyun-extras,aliyun-base,docker-ce-stable"
+  with_list:
+    - "docker-ce"
+  register: result
+  ignore_errors: True
+
+- name: 解决安装docker-ce依赖关系
+  shell: "yum -y install --disableplugin=priorities --enablerepo=[aliyun-base,aliyun-extras,docker-ce-stable] docker-ce"
+  when: result|failed
+  ignore_errors: True
+
+- name: 安装指定的k8s版本
+  yum:
+    name: "{{ item }}"
+    state: installed
+  with_list:
+    - "kubelet-{{k8s_version}}"
+    - "kubectl-{{k8s_version}}"
+    - "kubeadm-{{k8s_version}}"
+  when: k8s_version != "latest"
+
+- name: 安装指定的k8s版本
+  yum:
+    name: "{{ item }}"
+    state: installed
+  with_list:
+    - "kubelet"
+    - "kubectl"
+    - "kubeadm"
+  when: k8s_version == "latest"
+
+
+- name: 设置daemon-docker
+  shell: systemctl daemon-reload
+
+
+- name: 设置 kubectl 开机启动并立即启动
+  shell: systemctl enable "{{ item }}" && systemctl start "{{ item }}"
+  with_list:
+    - "docker"
+    - "kubelet"
+
+- name: 获取当前k8s镜像版本
+  shell: "kubeadm config images list 2>/dev/null | awk -F'/' '{print $2}'"
+  register: k8s_images_version
+
+- name: 拉取 k8s 镜像
+  shell: "docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/{{ item.0 }}"
+  with_together:
+    - "{{ k8s_images_version.stdout_lines }}"
+
+- name: 修改镜像为 k8s.gcr.io
+  shell: "docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/{{ item.0 }} k8s.gcr.io/{{ item.0 }}"
+  with_together:
+  - "{{ k8s_images_version.stdout_lines }}"
+
+

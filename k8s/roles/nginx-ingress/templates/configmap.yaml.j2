@@ -1,0 +1,60 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-configuration
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: tcp-services
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+
+data:
+  {% if mysql_on_k8s == "true" -%}
+  "3306": {{openstack_namespace}}/mysql:3306
+  {% endif -%}
+  {% if keystone_on_k8s == "true" -%}
+  "5000": {{openstack_namespace}}/keystone:5000
+  "35357": {{openstack_namespace}}/keystone:35357
+  {% endif -%}
+  {% if rabbitmq_on_k8s == "true" -%}
+  "5672": {{openstack_namespace}}/rabbitmq:5672
+  {% endif -%}
+  {% if nova_api_on_k8s == "true" -%}
+  "6080": {{openstack_namespace}}/nova-novncproxy:6080
+  "8774": {{openstack_namespace}}/nova-api:8774
+  "8775": {{openstack_namespace}}/nova-api:8775
+  {% endif -%}
+  {% if cinder_api_on_k8s == "true" -%}
+  "8776": {{openstack_namespace}}/cinder-api:8776
+  {% endif -%}
+  {% if glance_api_on_k8s == "true" -%}
+  "9292": {{openstack_namespace}}/glance-api:9292
+  {% endif -%}
+  {% if neutron_api_on_k8s == "true" -%}
+  "9696": {{openstack_namespace}}/neutron-server:9696
+  {% endif -%}
+  {% if redis_on_k8s == "true" -%}
+  "6379": {{openstack_namespace}}/redis:6379
+  {% endif -%}
+
+
+{% raw %}
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: udp-services
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+{% endraw %}

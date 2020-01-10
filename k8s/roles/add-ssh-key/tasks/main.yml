@@ -1,0 +1,9 @@
+- authorized_key:
+    user: root
+    key: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
+    state: present
+    exclusive: no
+    manage_dir: False
+
+- name: running add_ssh_key script
+  script: add_ssh_key.sh

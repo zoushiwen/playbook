@@ -1,0 +1,14 @@
+- hosts: localhost
+  vars:
+    RSAFILE: /root/.ssh/id_rsa
+  tasks:
+    - name: "ssh-keygen ssh key file"
+      shell: ssh-keygen -t rsa  -P '' -f {{RSAFILE}}
+      when: RSAFILE is not exists
+
+- hosts: all
+  gather_facts: no
+  roles:
+    - { role: add-ssh-key, do: main}
+
+

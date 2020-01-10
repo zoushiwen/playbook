@@ -1,0 +1,41 @@
+
+- name: 添加阿里云 docker-ce 镜像
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - {src: 'docker-ce.repo' , dest: '/etc/yum.repos.d/aliyun-docker-ce.repo' }
+    - {src: 'kubernetes.repo' , dest: '/etc/yum.repos.d/aliyun-kubernetes.repo'}
+
+- name: 检查系统版本
+  debug:
+    msg: "The system version must be CentOS and the version must be greater than or equal to 7."
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version <7
+
+- name: 检查系统版本
+  shell: exit 1;
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version <7
+
+- name: 检查登陆用户
+  debug:
+    msg: "The login is {},please login for root!"
+  when: ansible_user_id != "root"
+
+- name: 检查登陆用户
+  shell: exit 1;
+  when: ansible_user_id != "root"
+
+- name: 检查指定的 k8s 版本
+  shell: yum list kubeadm --showduplicates |grep 'kubeadm.x86_64' | awk '{print $2}' | awk -F- '{print $1}'
+  register: get_version
+
+- name: 检查指定的k8s版本
+  debug:
+    msg: "Please specify the correct k8s version.Or Specify the latest version\n yum list kubeadm --showduplicates"
+  register: result
+  when: k8s_version not in get_version.stdout_lines and k8s_version != "latest"
+
+
+- name: 检查指定的k8s版本
+  shell: exit 1;
+  when: result|failed

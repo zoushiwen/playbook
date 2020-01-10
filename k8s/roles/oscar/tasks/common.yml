@@ -1,0 +1,2 @@
+- include: "remove/retry_k8s.yml"
+- include: "common/k8s_install_init.yml"

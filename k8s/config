@@ -1,0 +1,19 @@
+[k8s-masters]
+192.168.0.1
+192.168.0.2
+192.168.0.3
+
+[k8s-nodes]
+192.168.0.4
+192.168.0.5
+
+[all:vars]
+vip="10.202.252.6"
+k8s_version="1.15.5"
+
+ceph_monitors="10.206.107.157:6789,10.142.121.143:6789"
+k8_dataDir= "/data/myK8S"
+openstack_namespace=wcloud
+axion_base_dir="/data/myK8S"
+
+

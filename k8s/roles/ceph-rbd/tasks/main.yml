@@ -1,0 +1,32 @@
+- name: create yaml ceph directory
+  file:
+    path: "{{ k8_dataDir }}/yaml/ceph_sc/sc"
+    state: directory
+
+
+- name: ceph_sc
+  template:
+    src: sc_ceph.yml.j2
+    dest: "{{ k8_dataDir }}/yaml/ceph_sc/sc/sc_ceph.yml"
+
+- name: copy sc
+  copy: src="{{ item.src }}" dest="{{ item.dest }}"
+  with_list:
+    - {src: 'rbd-deployment.yml',dest: '{{ k8_dataDir }}/yaml/ceph_sc' }
+    - {src: 'rbd-sa.yml',dest: '{{ k8_dataDir }}/yaml/ceph_sc' }
+    - {src: 'sc/secret.yml',dest: '{{ k8_dataDir }}/yaml/ceph_sc/sc' }
+    - {src: 'sc/test_sc_ceph.yml',dest: '{{ k8_dataDir }}/yaml/ceph_sc/sc' }
+
+
+- name: install ceph-rbd
+  shell: kubectl  apply  -f "{{k8_dataDir }}/yaml/ceph_sc/{{ item }}"
+  with_list:
+    - 'rbd-deployment.yml'
+    - 'rbd-sa.yml'
+
+- name: 配置 ceph
+  shell:  kubectl  apply -f "{{k8_dataDir }}/yaml/ceph_sc/sc/{{ item }}"
+  with_list:
+    - 'secret.yml'
+    - 'sc_ceph.yml'
+    - 'test_sc_ceph.yml'

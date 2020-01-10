@@ -1,0 +1,13 @@
+
+- name: 拷贝 admin.conf 文件
+  copy:
+    src: "/etc/kubernetes/admin.conf"
+    dest: "/root/.kube/config"
+
+- name: 获取加入集群config参数
+  shell: kubeadm token create --print-join-command
+  register: k8s_cluster_api
+
+- name: node 加入集群
+  shell: "{{ k8s_cluster_api.stdout }}"
+
