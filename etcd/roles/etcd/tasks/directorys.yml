@@ -1,0 +1,4 @@
+- name: 创建 manifests 目录
+  file:
+    path: "{{k8_dataDir}}/manifests/{{etcd_service_name}}"
+    state: directory

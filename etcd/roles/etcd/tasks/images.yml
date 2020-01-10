@@ -1,0 +1,3 @@
+- name: 拉取docker 镜像
+  command:
+    "{{docker_bin_path}}/docker pull {{harbor_registry}}/{{harbor_project}}/{{etcd_service_name}}:{{image_version|default('latest')}}"

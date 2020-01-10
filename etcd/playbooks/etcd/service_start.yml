@@ -1,0 +1,6 @@
+- hosts:
+  - "{{groups['k8s-masters'][0]}}"
+  gather_facts: no
+  become: true
+  roles:
+  - { role: etcd , do: service_start }

@@ -1,0 +1,24 @@
+[k8s-masters]
+192.168.0.1
+192.168.0.2
+192.168.0.3
+
+
+[all:vars]
+#default variables
+
+docker_bin_path= "/bin"
+kube_bin_path= "/bin"
+k8_dataDir= "/data/myK8S"
+project= "wcloud"
+project_namespace= "wcloud"
+log_general_dir= "/var/log"
+project_replicas=1
+k8s_sc_name_rbd= "ceph-rbd"
+
+
+#etcd
+etcd_replicas=1
+etcd_service_name = "etcd"
+etcd_storage_size= "10"
+

@@ -1,0 +1,3 @@
+- include: "directorys.yml"
+- include: "images.yml"
+- include: "k8_yamls.yml"

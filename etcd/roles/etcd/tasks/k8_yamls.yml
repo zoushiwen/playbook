@@ -1,0 +1,12 @@
+
+- name: 设置 etcd 启动容器变量
+  set_fact:
+    yamls:
+      - "pods.yaml"
+      - "svc.yaml"
+      - "pvc.yaml"
+- name: 上传{{service_name}} k8 yaml
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{k8_dataDir}}/manifests/{{etcd_service_name}}/{{ item }}"
+  with_items: "{{ yamls }}"

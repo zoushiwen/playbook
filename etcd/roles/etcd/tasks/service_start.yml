@@ -1,0 +1,11 @@
+- name: K8S 关闭PODS - {{etcd_service_name}}
+  ignore_errors: yes
+  shell: |
+    {{kube_bin_path}}/kubectl delete -f {{k8_dataDir}}/manifests/{{etcd_service_name}}/svc.yaml
+    {{kube_bin_path}}/kubectl delete -f {{k8_dataDir}}/manifests/{{etcd_service_name}}/pods.yaml
+    {{kube_bin_path}}/kubectl delete -f {{k8_dataDir}}/manifests/{{etcd_service_name}}/pvc.yaml
+- name: K8S 启动PODS - {{etcd_service_name}}
+  shell: |
+    {{kube_bin_path}}/kubectl create -f {{k8_dataDir}}/manifests/{{etcd_service_name}}/pvc.yaml
+    {{kube_bin_path}}/kubectl create -f {{k8_dataDir}}/manifests/{{etcd_service_name}}/pods.yaml
+    {{kube_bin_path}}/kubectl create -f {{k8_dataDir}}/manifests/{{etcd_service_name}}/svc.yaml

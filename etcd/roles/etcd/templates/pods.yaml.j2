@@ -1,0 +1,48 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: etcd
+  namespace: {{project_namespace|default('wcloud')}}
+  labels:
+    app: {{etcd_service_name}}
+spec:
+  serviceName: etcd
+  replicas: {{etcd_replicas|default('1')}}
+  template:
+    metadata:
+      labels:
+        app: {{etcd_service_name}}
+    spec:
+      containers:
+      - command:
+        - /usr/local/bin/etcd
+        - --name=neutron-etcd
+        - --data-dir=/var/lib/etcd
+        - --listen-client-urls=http://0.0.0.0:2379
+        - --advertise-client-urls=http://0.0.0.0:2379
+        - --listen-peer-urls=http://0.0.0.0:2380
+        - --initial-advertise-peer-urls=http://0.0.0.0:2380
+        - --initial-cluster=neutron-etcd=http://0.0.0.0:2380
+        - --initial-cluster-token=tkn
+        - --initial-cluster-state=new
+        - --snapshot-count=10000
+        image: quay.io/coreos/etcd:latest
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -ec
+            - ETCDCTL_API=3 etcdctl --endpoints=http://[127.0.0.1]:2379 get foo
+          failureThreshold: 8
+          initialDelaySeconds: 15
+          timeoutSeconds: 15
+        name: etcd-neutron
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/etcd
+          name: etcd-data
+      volumes:
+      - persistentVolumeClaim:
+          claimName: etcd-rbd-pvc
+        name: etcd-data
