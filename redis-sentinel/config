@@ -1,0 +1,13 @@
+[redis-sentinel-master]
+10.202.252.14
+
+[redis-sentinel-slave]
+10.202.146.155
+10.202.254.171
+
+[all:vars]
+### redis Sentinel ###
+redisPort = 6379
+#redisPassword = test123
+#requirepass = true
+

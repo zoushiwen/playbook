@@ -1,0 +1,8 @@
+- hosts: redis-sentinel-master redis-sentinel-slave
+  tasks:
+    - name: stop redis
+      service: name=redis state=stopped
+    - name: stop redis-sentinel
+      service: name=redis-sentinel state=stopped
+    - name: remove redis
+      yum: name=redis state=removed

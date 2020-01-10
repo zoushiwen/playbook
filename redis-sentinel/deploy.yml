@@ -1,0 +1,26 @@
+- hosts: redis-sentinel-master redis-sentinel-slave
+  gather_facts: yes
+  roles:
+    - { role: redis-sentinel,do: init}
+
+- hosts: redis-sentinel-master
+  gather_facts: yes
+  roles:
+    - { role: redis-sentinel, do: master}
+
+- hosts: redis-sentinel-slave
+  gather_facts: yes
+  vars:
+    masterIP: "{{ groups['redis-sentinel-master'][0]}}"
+  roles:
+    - { role: redis-sentinel, do: slave}
+
+- hosts: redis-sentinel-master redis-sentinel-slave
+  gather_facts: yes
+  vars:
+    masterIP: "{{ groups['redis-sentinel-master'][0]}}"
+  roles:
+    - { role: redis-sentinel, do: sentinel}
+
+
+

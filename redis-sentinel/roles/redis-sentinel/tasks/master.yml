@@ -1,0 +1,5 @@
+- name: "copy redis master"
+  template: src=redis-master.conf.j2 dest=/etc/redis.conf
+
+- name: start redis
+  service: name=redis state=restarted

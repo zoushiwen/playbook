@@ -1,0 +1,5 @@
+- name: "copy redis slave"
+  template: src=redis-slave.conf.j2 dest=/etc/redis.conf
+
+- name: start redis
+  service: name=redis state=restarted
