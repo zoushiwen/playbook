@@ -1,0 +1,44 @@
+- name: crate data directory
+  file:
+    path: /data
+    state: directory
+    mode: 0755
+  ignore_errors: True
+
+
+- name: register result
+  command: ls /data
+  register: result
+
+- set_fact: DOCKER_COMPOSE_FILE="/usr/bin/docker-compose"
+
+- block:
+    - name: down file harbor offline file
+      get_url:
+        url: "{{ HARBOR_OFFLINE_URL | default('https://storage.googleapis.com/harbor-releases/release-1.7.0/harbor-offline-installer-v1.7.6.tgz') }}"
+        dest: "/data"
+
+    - name: distribute docker compose binary
+      copy: src=docker-compose dest=/usr/bin/docker-compose mode=0755
+      when: DOCKER_COMPOSE_FILE is not exists
+
+    - name: tar harbor offline package
+      shell: "cd /data && tar zxf harbor-offline-installer-{{ HARBOR_VERSION }}.tgz"
+
+    - name: load harbor docker images
+      shell: "docker load -i /data/harbor/harbor.{{ HARBOR_VERSION }}.tar.gz"
+
+    - name: config harbor.cfg
+      template: src="{{ item.src }}" dest="{{ item.dest }}"
+      with_items:
+        - {src: "harbor-cfg.j2", dest: "/data/harbor/harbor.cfg"}
+        - {src: "docker-compose-v1.7.6.yml.j2", dest: "/data/harbor/docker-compose.yml"}
+    
+    - name: install harbor
+      shell: "cd /data/harbor &&  ./install.sh "
+
+    - name: add insecure-registries
+      debug:
+        msg: '/etc/docker/daemon.json file add "insecure-registries":["{{ inventory_hostname }}:{{ HARBOR_PORT }}"]'
+
+  when: '"registry" not in result.stdout'
